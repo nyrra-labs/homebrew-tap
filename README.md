@@ -9,7 +9,7 @@ This repo is the tap source of truth. Formulae are updated by repo-owned scripts
 | Formula | Upstream | Notes |
 |---|---|---|
 | `nyrra-foundry-cli` | `nyrra-labs/nyrra-foundry-cli` GitHub Releases | Private darwin release assets. The current release archive also omits `templates/README.md`, so the formula patches that sentinel file during install to keep `templates` commands working. |
-| `nyrra-signals` | `nyrra-labs/nyrra-signals` GitHub Releases | Not included yet. Waiting on darwin release artifacts. |
+| `nyrra-signals` | `nyrra-labs/nyrra-signals` GitHub Releases | Private darwin arm64 release asset. Formula is macOS arm64 only for now. |
 
 ## Automation
 
@@ -23,6 +23,7 @@ Once the GitHub repo exists as `nyrra-labs/homebrew-tap`:
 ```bash
 brew tap nyrra-labs/tap
 brew install nyrra-labs/tap/nyrra-foundry-cli
+brew install nyrra-labs/tap/nyrra-signals
 ```
 
 ## Current Limitation
@@ -30,6 +31,7 @@ brew install nyrra-labs/tap/nyrra-foundry-cli
 - `nyrra-foundry-cli` is still a private release repo, so this tap is currently NYRRA-internal.
 - Automation can read those releases with the org-level `NYRRA_GH_TOKEN`.
 - End-user Homebrew auth for private release downloads is not fully validated yet, so do not present the tap as a polished public install path until that is proven.
+- `nyrra-signals` is currently macOS arm64 only.
 
 ## Local Usage
 

@@ -48,10 +48,10 @@ That uses your local GitHub CLI session for private release access.
 
 ## Current Limitation
 
-The first formula, `nyrra-foundry-cli`, can be generated and maintained automatically, but private Homebrew install auth is still an internal-only story until it is validated end-to-end on macOS.
+The current formulae can be generated and maintained automatically, but private Homebrew install auth is still an internal-only story until it is validated end-to-end on macOS. `nyrra-signals` is also arm64-only for now.
 
 ## Recommended Follow-Up
 
 1. Attach `NYRRA_GH_TOKEN` to this repo once it exists.
 2. Validate a real `brew install nyrra-labs/tap/nyrra-foundry-cli` flow on macOS with a user who has access to the private upstream repo.
-3. Add `nyrra-signals` once the darwin release artifacts exist.
+3. Validate a real `brew install nyrra-labs/tap/nyrra-signals` flow on macOS arm64 with a user who has access to the private upstream repo.
