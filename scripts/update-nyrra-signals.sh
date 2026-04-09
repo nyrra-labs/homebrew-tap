@@ -18,6 +18,26 @@ repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 formula_path="${repo_root}/Formula/nyrra-signals.rb"
 repo="nyrra-labs/nyrra-signals"
 
+verify_sha256() {
+  local expected="$1"
+  local file="$2"
+  local actual
+
+  if command -v shasum >/dev/null 2>&1; then
+    actual="$(shasum -a 256 "${file}" | awk '{print $1}')"
+  elif command -v sha256sum >/dev/null 2>&1; then
+    actual="$(sha256sum "${file}" | awk '{print $1}')"
+  else
+    echo "Unable to verify SHA-256: neither shasum nor sha256sum is available." >&2
+    exit 1
+  fi
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "SHA-256 mismatch for ${file}: expected ${expected}, got ${actual}." >&2
+    exit 1
+  fi
+}
+
 if [[ -n "${NYRRA_GH_TOKEN:-}" ]]; then
   release_json="$(GH_TOKEN="${NYRRA_GH_TOKEN}" gh api "repos/${repo}/releases/latest")"
 elif [[ -n "${GITHUB_ACTIONS:-}" ]]; then
@@ -39,9 +59,10 @@ arm64_json="$(jq -c '
 ' <<<"${release_json}")"
 
 arm64_asset="$(jq -r '.name // empty' <<<"${arm64_json}")"
+arm64_api_url="$(jq -r '.url // empty' <<<"${arm64_json}")"
 arm64_sha="$(jq -r '.digest // empty' <<<"${arm64_json}")"
 
-if [[ -z "${arm64_asset}" || "${arm64_asset}" == "null" ]]; then
+if [[ -z "${arm64_asset}" || "${arm64_asset}" == "null" || -z "${arm64_api_url}" || "${arm64_api_url}" == "null" ]]; then
   if [[ "${optional}" == "true" ]]; then
     echo "Skipping nyrra-signals: latest release is missing a darwin arm64 archive." >&2
     exit 0
@@ -74,12 +95,73 @@ fi
 
 (
   cd "${tmpdir}"
-  echo "${arm64_sha}  ${arm64_asset}" | sha256sum -c
+  verify_sha256 "${arm64_sha}" "${arm64_asset}"
   tar -tzf "${arm64_asset}" \
     "nyrra-signals_v${version}_darwin_arm64/nyrra-signals" >/dev/null
 )
 
 cat > "${formula_path}" <<EOF
+class NyrraSignalsGitHubReleaseDownloadStrategy < CurlDownloadStrategy
+  def initialize(url, name, version, **meta)
+    @resolved_basename = meta.delete(:resolved_basename)
+    @github_token = resolve_github_token
+
+    if @github_token.nil? || @github_token.empty?
+      raise CurlDownloadStrategyError.new(
+        url,
+        [
+          "GitHub authentication is required to download the private nyrra-signals release asset.",
+          "Set HOMEBREW_GITHUB_API_TOKEN, GH_TOKEN, GITHUB_TOKEN, or NYRRA_GH_TOKEN,",
+          "or log in with gh auth login."
+        ].join(" ")
+      )
+    end
+
+    meta[:headers] ||= []
+    meta[:headers] << "Accept: application/octet-stream"
+    meta[:headers] << "Authorization: Bearer #{@github_token}"
+    super
+  end
+
+  private
+
+  def resolve_github_token
+    %w[HOMEBREW_GITHUB_API_TOKEN GH_TOKEN GITHUB_TOKEN NYRRA_GH_TOKEN].each do |key|
+      value = ENV[key]&.strip
+      return value unless value.nil? || value.empty?
+    end
+
+    [
+      "#{HOMEBREW_PREFIX}/bin/gh",
+      "/opt/homebrew/bin/gh",
+      "/usr/local/bin/gh",
+      "gh"
+    ].uniq.each do |gh|
+      next if gh != "gh" && !File.executable?(gh)
+
+      value = Utils.safe_popen_read(gh, "auth", "token").strip
+      return value unless value.empty?
+    rescue ErrorDuringExecution, Errno::ENOENT
+      next
+    end
+
+    nil
+  end
+
+  def resolve_url_basename_time_file_size(url, timeout: nil)
+    resolved_url, _, last_modified, file_size, content_type, is_redirection = super
+    [resolved_url, @resolved_basename, last_modified, file_size, content_type, is_redirection]
+  end
+
+  def curl_output(*args, **options)
+    super(*args, secrets: [@github_token], **options)
+  end
+
+  def curl(*args, print_stdout: true, **options)
+    super(*args, print_stdout: print_stdout, secrets: [@github_token], **options)
+  end
+end
+
 class NyrraSignals < Formula
   desc "Signal exploration TUI"
   homepage "https://github.com/nyrra-labs/nyrra-signals"
@@ -88,13 +170,15 @@ class NyrraSignals < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/${repo}/releases/download/v${version}/${arm64_asset}"
+      url "${arm64_api_url}",
+          using: NyrraSignalsGitHubReleaseDownloadStrategy,
+          resolved_basename: "${arm64_asset}"
       sha256 "${arm64_sha}"
     end
   end
 
   def install
-    bin.install "nyrra-signals_v#{version}_darwin_arm64/nyrra-signals" => "nyrra-signals"
+    bin.install "nyrra-signals"
   end
 
   test do

@@ -9,7 +9,7 @@ This repo is the tap source of truth. Formulae are updated by repo-owned scripts
 | Formula | Upstream | Notes |
 |---|---|---|
 | `nyrra-foundry-cli` | `nyrra-labs/nyrra-foundry-cli` GitHub Releases | Private darwin release assets. The current release archive also omits `templates/README.md`, so the formula patches that sentinel file during install to keep `templates` commands working. |
-| `nyrra-signals` | `nyrra-labs/nyrra-signals` GitHub Releases | Private darwin arm64 release asset. Formula is macOS arm64 only for now. |
+| `nyrra-signals` | `nyrra-labs/nyrra-signals` GitHub Releases | Private darwin arm64 release asset fetched through the GitHub Releases API. The formula reads `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, or `NYRRA_GH_TOKEN`, and falls back to `gh auth token` when available. |
 
 ## Automation
 
@@ -26,11 +26,17 @@ brew install nyrra-labs/tap/nyrra-foundry-cli
 brew install nyrra-labs/tap/nyrra-signals
 ```
 
+If `gh` is not installed or not logged in locally, run `nyrra-signals` installs with an explicit token:
+
+```bash
+HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install nyrra-labs/tap/nyrra-signals
+```
+
 ## Current Limitation
 
 - `nyrra-foundry-cli` is still a private release repo, so this tap is currently NYRRA-internal.
 - Automation can read those releases with the org-level `NYRRA_GH_TOKEN`.
-- End-user Homebrew auth for private release downloads is not fully validated yet, so do not present the tap as a polished public install path until that is proven.
+- `nyrra-signals` now uses authenticated GitHub Releases API downloads for private assets, but the broader private-package story is still internal-only and `nyrra-foundry-cli` still needs the same install-side auth treatment.
 - `nyrra-signals` is currently macOS arm64 only.
 
 ## Local Usage

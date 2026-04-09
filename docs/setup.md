@@ -46,12 +46,18 @@ If you are logged into GitHub locally with `gh auth login`, you can run:
 
 That uses your local GitHub CLI session for private release access.
 
+For local `brew install nyrra-labs/tap/nyrra-signals`, the formula uses the same auth path:
+
+- it first checks `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, and `NYRRA_GH_TOKEN`
+- if none are set, it falls back to `gh auth token`
+- in headless environments, prefer `HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install ...`
+
 ## Current Limitation
 
-The current formulae can be generated and maintained automatically, but private Homebrew install auth is still an internal-only story until it is validated end-to-end on macOS. `nyrra-signals` is also arm64-only for now.
+`nyrra-signals` now has install-side auth for private release assets. `nyrra-foundry-cli` still uses direct GitHub release URLs and will keep failing until it gets the same treatment. `nyrra-signals` is also arm64-only for now.
 
 ## Recommended Follow-Up
 
 1. Attach `NYRRA_GH_TOKEN` to this repo once it exists.
 2. Validate a real `brew install nyrra-labs/tap/nyrra-foundry-cli` flow on macOS with a user who has access to the private upstream repo.
-3. Validate a real `brew install nyrra-labs/tap/nyrra-signals` flow on macOS arm64 with a user who has access to the private upstream repo.
+3. Keep `nyrra-signals` install auth aligned with whatever token source NYRRA standardizes on for local operator machines.

@@ -18,6 +18,26 @@ repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 formula_path="${repo_root}/Formula/nyrra-foundry-cli.rb"
 repo="nyrra-labs/nyrra-foundry-cli"
 
+verify_sha256() {
+  local expected="$1"
+  local file="$2"
+  local actual
+
+  if command -v shasum >/dev/null 2>&1; then
+    actual="$(shasum -a 256 "${file}" | awk '{print $1}')"
+  elif command -v sha256sum >/dev/null 2>&1; then
+    actual="$(sha256sum "${file}" | awk '{print $1}')"
+  else
+    echo "Unable to verify SHA-256: neither shasum nor sha256sum is available." >&2
+    exit 1
+  fi
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "SHA-256 mismatch for ${file}: expected ${expected}, got ${actual}." >&2
+    exit 1
+  fi
+}
+
 if [[ -n "${NYRRA_GH_TOKEN:-}" ]]; then
   release_json="$(GH_TOKEN="${NYRRA_GH_TOKEN}" gh api "repos/${repo}/releases/latest")"
 elif [[ -n "${GITHUB_ACTIONS:-}" ]]; then
@@ -82,8 +102,8 @@ fi
 
 (
   cd "${tmpdir}"
-  echo "${amd64_sha}  ${amd64_asset}" | sha256sum -c
-  echo "${arm64_sha}  ${arm64_asset}" | sha256sum -c
+  verify_sha256 "${amd64_sha}" "${amd64_asset}"
+  verify_sha256 "${arm64_sha}" "${arm64_asset}"
   tar -tzf "${amd64_asset}" \
     nyrra-foundry-cli \
     LICENSE \
