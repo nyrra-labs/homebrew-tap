@@ -98,10 +98,10 @@ class NyrraFoundryCli < Formula
       Package-manager installs do not edit your shell config.
 
       To add the upstream npc shorthand in zsh:
-        printf '\nalias npc=nyrra-foundry-cli\nsource <(nyrra-foundry-cli completion --code zsh)\n' >> ~/.zshrc
+        printf '\\nalias npc=nyrra-foundry-cli\\nsource <(nyrra-foundry-cli completion --code zsh)\\n' >> ~/.zshrc
 
       To add it in bash:
-        printf '\nalias npc=nyrra-foundry-cli\nsource <(nyrra-foundry-cli completion --code bash)\n' >> ~/.bashrc
+        printf '\\nalias npc=nyrra-foundry-cli\\nsource <(nyrra-foundry-cli completion --code bash)\\n' >> ~/.bashrc
     EOS
   end
 
