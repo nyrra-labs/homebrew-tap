@@ -62,15 +62,15 @@ end
 class NyrraSignals < Formula
   desc "Signal exploration TUI"
   homepage "https://github.com/nyrra-labs/nyrra-signals"
-  version "0.0.10"
+  version "0.0.11"
   depends_on arch: :arm64
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-signals/releases/assets/392337226",
+      url "https://api.github.com/repos/nyrra-labs/nyrra-signals/releases/assets/393097815",
           using: NyrraSignalsGitHubReleaseDownloadStrategy,
-          resolved_basename: "nyrra-signals_v0.0.10_darwin_arm64.tar.gz"
-      sha256 "2a4f07e0511edebf5c33f612e75fb7f4149a5f323bcf1dd365ee522c1c912a92"
+          resolved_basename: "nyrra-signals_v0.0.11_darwin_arm64.tar.gz"
+      sha256 "c39d7d01ddeaa7808e27343dbf289358cd46735afb5b6e7167d2c43cad36e218"
     end
   end
 
