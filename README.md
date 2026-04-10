@@ -8,7 +8,7 @@ This repo is the tap source of truth. Formulae are updated by repo-owned scripts
 
 | Formula | Upstream | Notes |
 |---|---|---|
-| `nyrra-foundry-cli` | `nyrra-labs/nyrra-foundry-cli` GitHub Releases | Private darwin release assets. The current release archive also omits `templates/README.md`, so the formula patches that sentinel file during install to keep `templates` commands working. |
+| `nyrra-foundry-cli` | `nyrra-labs/nyrra-foundry-cli` GitHub Releases | Private darwin release assets fetched through the GitHub Releases API. The formula reads `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, or `NYRRA_GH_TOKEN`, and falls back to `gh auth token` when available. The current release archive also omits `templates/README.md`, so the formula patches that sentinel file during install to keep `templates` commands working. |
 | `nyrra-signals` | `nyrra-labs/nyrra-signals` GitHub Releases | Private darwin arm64 release asset fetched through the GitHub Releases API. The formula reads `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, or `NYRRA_GH_TOKEN`, and falls back to `gh auth token` when available. |
 
 ## Automation
@@ -26,9 +26,10 @@ brew install nyrra-labs/tap/nyrra-foundry-cli
 brew install nyrra-labs/tap/nyrra-signals
 ```
 
-If `gh` is not installed or not logged in locally, run `nyrra-signals` installs with an explicit token:
+If `gh` is not installed or not logged in locally, run installs with an explicit token:
 
 ```bash
+HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install nyrra-labs/tap/nyrra-foundry-cli
 HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install nyrra-labs/tap/nyrra-signals
 ```
 
@@ -36,7 +37,7 @@ HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install nyrra-labs/tap/nyrra-s
 
 - `nyrra-foundry-cli` is still a private release repo, so this tap is currently NYRRA-internal.
 - Automation can read those releases with the org-level `NYRRA_GH_TOKEN`.
-- `nyrra-signals` now uses authenticated GitHub Releases API downloads for private assets, but the broader private-package story is still internal-only and `nyrra-foundry-cli` still needs the same install-side auth treatment.
+- `nyrra-foundry-cli` and `nyrra-signals` both use authenticated GitHub Releases API downloads for private assets, but the broader private-package story is still internal-only.
 - `nyrra-signals` is currently macOS arm64 only.
 
 ## Local Usage
