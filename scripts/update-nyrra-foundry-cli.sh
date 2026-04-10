@@ -64,11 +64,13 @@ arm64_json="$(jq -c '
 ' <<<"${release_json}")"
 
 amd64_asset="$(jq -r '.name // empty' <<<"${amd64_json}")"
+amd64_api_url="$(jq -r '.url // empty' <<<"${amd64_json}")"
 amd64_sha="$(jq -r '.digest // empty' <<<"${amd64_json}")"
 arm64_asset="$(jq -r '.name // empty' <<<"${arm64_json}")"
+arm64_api_url="$(jq -r '.url // empty' <<<"${arm64_json}")"
 arm64_sha="$(jq -r '.digest // empty' <<<"${arm64_json}")"
 
-if [[ -z "${amd64_asset}" || "${amd64_asset}" == "null" || -z "${arm64_asset}" || "${arm64_asset}" == "null" ]]; then
+if [[ -z "${amd64_asset}" || "${amd64_asset}" == "null" || -z "${amd64_api_url}" || "${amd64_api_url}" == "null" || -z "${arm64_asset}" || "${arm64_asset}" == "null" || -z "${arm64_api_url}" || "${arm64_api_url}" == "null" ]]; then
   if [[ "${optional}" == "true" ]]; then
     echo "Skipping nyrra-foundry-cli: latest release is missing required darwin archives." >&2
     exit 0
@@ -119,6 +121,67 @@ fi
 )
 
 cat > "${formula_path}" <<EOF
+class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
+  def initialize(url, name, version, **meta)
+    @resolved_basename = meta.delete(:resolved_basename)
+    @github_token = resolve_github_token
+
+    if @github_token.nil? || @github_token.empty?
+      raise CurlDownloadStrategyError.new(
+        url,
+        [
+          "GitHub authentication is required to download the private nyrra-foundry-cli release asset.",
+          "Set HOMEBREW_GITHUB_API_TOKEN, GH_TOKEN, GITHUB_TOKEN, or NYRRA_GH_TOKEN,",
+          "or log in with gh auth login."
+        ].join(" ")
+      )
+    end
+
+    meta[:headers] ||= []
+    meta[:headers] << "Accept: application/octet-stream"
+    meta[:headers] << "Authorization: Bearer #{@github_token}"
+    super
+  end
+
+  private
+
+  def resolve_github_token
+    %w[HOMEBREW_GITHUB_API_TOKEN GH_TOKEN GITHUB_TOKEN NYRRA_GH_TOKEN].each do |key|
+      value = ENV[key]&.strip
+      return value unless value.nil? || value.empty?
+    end
+
+    [
+      "#{HOMEBREW_PREFIX}/bin/gh",
+      "/opt/homebrew/bin/gh",
+      "/usr/local/bin/gh",
+      "gh"
+    ].uniq.each do |gh|
+      next if gh != "gh" && !File.executable?(gh)
+
+      value = Utils.safe_popen_read(gh, "auth", "token").strip
+      return value unless value.empty?
+    rescue ErrorDuringExecution, Errno::ENOENT
+      next
+    end
+
+    nil
+  end
+
+  def resolve_url_basename_time_file_size(url, timeout: nil)
+    resolved_url, _, last_modified, file_size, content_type, is_redirection = super
+    [resolved_url, @resolved_basename, last_modified, file_size, content_type, is_redirection]
+  end
+
+  def curl_output(*args, **options)
+    super(*args, secrets: [@github_token], **options)
+  end
+
+  def curl(*args, print_stdout: true, **options)
+    super(*args, print_stdout: print_stdout, secrets: [@github_token], **options)
+  end
+end
+
 class NyrraFoundryCli < Formula
   desc "Foundry DevOps automation CLI"
   homepage "https://github.com/nyrra-labs/nyrra-foundry-cli"
@@ -127,12 +190,16 @@ class NyrraFoundryCli < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/${repo}/releases/download/v${version}/${arm64_asset}"
+      url "${arm64_api_url}",
+          using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
+          resolved_basename: "${arm64_asset}"
       sha256 "${arm64_sha}"
     end
 
     on_intel do
-      url "https://github.com/${repo}/releases/download/v${version}/${amd64_asset}"
+      url "${amd64_api_url}",
+          using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
+          resolved_basename: "${amd64_asset}"
       sha256 "${amd64_sha}"
     end
   end
@@ -147,6 +214,18 @@ class NyrraFoundryCli < Formula
     template_readme.write("# templates\n") unless template_readme.exist?
 
     bin.install_symlink libexec/"nyrra-foundry-cli"
+  end
+
+  def caveats
+    <<~EOS
+      Package-manager installs do not edit your shell config.
+
+      To add the upstream npc shorthand in zsh:
+        printf '\\\\nalias npc=nyrra-foundry-cli\\\\nsource <(nyrra-foundry-cli completion --code zsh)\\\\n' >> ~/.zshrc
+
+      To add it in bash:
+        printf '\\\\nalias npc=nyrra-foundry-cli\\\\nsource <(nyrra-foundry-cli completion --code bash)\\\\n' >> ~/.bashrc
+    EOS
   end
 
   test do
