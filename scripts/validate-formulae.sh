@@ -15,6 +15,13 @@ if [[ -f "${signals_formula}" ]]; then
   grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-signals/releases/assets/' "${signals_formula}"
 fi
 
+foundry_formula="${repo_root}/Formula/nyrra-foundry-cli.rb"
+if [[ -f "${foundry_formula}" ]]; then
+  grep -q 'using: NyrraFoundryCliGitHubReleaseDownloadStrategy' "${foundry_formula}"
+  grep -q 'resolved_basename: "nyrra-foundry-cli_' "${foundry_formula}"
+  grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/' "${foundry_formula}"
+fi
+
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 

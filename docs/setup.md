@@ -52,12 +52,22 @@ For local `brew install nyrra-labs/tap/nyrra-signals`, the formula uses the same
 - if none are set, it falls back to `gh auth token`
 - in headless environments, prefer `HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install ...`
 
-## Current Limitation
+## Package-Manager Install Behavior
 
-`nyrra-signals` now has install-side auth for private release assets. `nyrra-foundry-cli` still uses direct GitHub release URLs and will keep failing until it gets the same treatment. `nyrra-signals` is also arm64-only for now.
+Both private formulae now use install-side GitHub auth:
+
+- they check `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, and `NYRRA_GH_TOKEN`
+- if no token env var is present, they fall back to `gh auth token`
+
+Package-manager installs still intentionally avoid mutating your shell config:
+
+- `nyrra-foundry-cli` does not create a standalone `npc` binary; use the printed caveats to add the `npc` shell alias and completion snippet yourself
+- `nyrra-signals` does not auto-open its first-run TUI; run `nyrra-signals setup` from a real terminal after install
+
+`nyrra-signals` remains arm64-only on macOS for now.
 
 ## Recommended Follow-Up
 
 1. Attach `NYRRA_GH_TOKEN` to this repo once it exists.
-2. Validate a real `brew install nyrra-labs/tap/nyrra-foundry-cli` flow on macOS with a user who has access to the private upstream repo.
-3. Keep `nyrra-signals` install auth aligned with whatever token source NYRRA standardizes on for local operator machines.
+2. Validate real `brew install nyrra-labs/tap/nyrra-foundry-cli` and `brew install nyrra-labs/tap/nyrra-signals` flows on macOS with a user who has access to the private upstream repos.
+3. Keep the package-manager caveats aligned with the upstream installers when shorthand or setup UX changes.

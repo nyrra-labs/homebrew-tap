@@ -78,6 +78,15 @@ class NyrraSignals < Formula
     bin.install "nyrra-signals"
   end
 
+  def caveats
+    <<~EOS
+      Run the guided first-run setup from a real terminal:
+        nyrra-signals setup
+
+      Package-manager installs do not auto-open the TUI for you.
+    EOS
+  end
+
   test do
     assert_predicate bin/"nyrra-signals", :exist?
   end
