@@ -17,6 +17,7 @@ Result:
 - branch and PR creation use the repo `GITHUB_TOKEN`
 - private NYRRA formula refreshes work only if the repo can read `NYRRA_GH_TOKEN`
 - there is no separate publish workflow because the tap repo itself is the distribution surface
+- upstream `nyrra-signals` and `nyrra-foundry-cli` release workflows can also trigger this workflow automatically with `gh workflow run version-bumps.yml`, but that depends on `NYRRA_WORKFLOW_DISPATCH_TOKEN` being configured in those producer repos
 
 ## Org-Level Secret
 

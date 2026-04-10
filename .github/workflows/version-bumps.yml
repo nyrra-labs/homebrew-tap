@@ -2,11 +2,8 @@ name: version-bumps
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types:
-      - upstream-release
   schedule:
-    - cron: '41 * * * *'
+    - cron: '41 6 * * *'
 
 permissions:
   contents: write
