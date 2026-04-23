@@ -38,6 +38,23 @@ verify_sha256() {
   fi
 }
 
+verify_release_archive() {
+  local archive="$1"
+  local listing
+
+  listing="$(tar -tzf "${archive}")"
+
+  grep -Fxq "nyrra-foundry-cli" <<<"${listing}"
+  grep -Fxq "LICENSE" <<<"${listing}"
+  grep -Fxq "NOTICE" <<<"${listing}"
+  grep -Fxq "README.md" <<<"${listing}"
+
+  if ! grep -Eq '^templates/(compute-module-ts|compute-modules/typescript)/package\.json$' <<<"${listing}"; then
+    echo "Release archive ${archive} is missing a recognized compute module template package.json." >&2
+    exit 1
+  fi
+}
+
 if [[ -n "${NYRRA_GH_TOKEN:-}" ]]; then
   release_json="$(GH_TOKEN="${NYRRA_GH_TOKEN}" gh api "repos/${repo}/releases/latest")"
 elif [[ -n "${GITHUB_ACTIONS:-}" ]]; then
@@ -106,18 +123,8 @@ fi
   cd "${tmpdir}"
   verify_sha256 "${amd64_sha}" "${amd64_asset}"
   verify_sha256 "${arm64_sha}" "${arm64_asset}"
-  tar -tzf "${amd64_asset}" \
-    nyrra-foundry-cli \
-    LICENSE \
-    NOTICE \
-    README.md \
-    templates/compute-module-ts/package.json >/dev/null
-  tar -tzf "${arm64_asset}" \
-    nyrra-foundry-cli \
-    LICENSE \
-    NOTICE \
-    README.md \
-    templates/compute-module-ts/package.json >/dev/null
+  verify_release_archive "${amd64_asset}"
+  verify_release_archive "${arm64_asset}"
 )
 
 cat > "${formula_path}" <<EOF
