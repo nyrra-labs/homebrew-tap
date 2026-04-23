@@ -62,22 +62,22 @@ end
 class NyrraFoundryCli < Formula
   desc "Foundry DevOps automation CLI"
   homepage "https://github.com/nyrra-labs/nyrra-foundry-cli"
-  version "0.0.9"
+  version "0.0.12"
   license "Apache-2.0"
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/401051037",
+      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/403846200",
           using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
-          resolved_basename: "nyrra-foundry-cli_0.0.9_darwin_arm64.tar.gz"
-      sha256 "3b9934722df38f6dc6657f5a0a7736e2c5f9a6311259c5c7a44a899fb58b3e95"
+          resolved_basename: "nyrra-foundry-cli_0.0.12_darwin_arm64.tar.gz"
+      sha256 "918c1edb27ea72f22fc7904eaa2ed1f938ea79680105cc69e2990964d3456659"
     end
 
     on_intel do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/401051039",
+      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/403846197",
           using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
-          resolved_basename: "nyrra-foundry-cli_0.0.9_darwin_amd64.tar.gz"
-      sha256 "cda79e461e4ea153d639d999017990952a92e9beeb45f8497b225e771ee5d5c0"
+          resolved_basename: "nyrra-foundry-cli_0.0.12_darwin_amd64.tar.gz"
+      sha256 "889202612d25e4d53293ab60621a510dc3f5886f8bc577701060eb79216c71a4"
     end
   end
 
