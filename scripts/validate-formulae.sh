@@ -22,6 +22,13 @@ if [[ -f "${foundry_formula}" ]]; then
   grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/' "${foundry_formula}"
 fi
 
+scryu_formula="${repo_root}/Formula/scryu.rb"
+if [[ -f "${scryu_formula}" ]]; then
+  grep -q 'class Scryu < Formula' "${scryu_formula}"
+  grep -q 'homepage "https://scryu.com"' "${scryu_formula}"
+  grep -q 'url "https://install.scryu.com/releases/' "${scryu_formula}"
+fi
+
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 
