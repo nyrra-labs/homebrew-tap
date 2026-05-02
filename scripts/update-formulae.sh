@@ -8,7 +8,7 @@ if (($# == 0)); then
 fi
 
 if [[ "$1" == "auto" ]]; then
-  formulae=()
+  formulae=(scryu)
   if [[ -n "${NYRRA_GH_TOKEN:-}" || -z "${GITHUB_ACTIONS:-}" ]]; then
     formulae+=(nyrra-foundry-cli)
     formulae+=(nyrra-signals)
@@ -17,6 +17,7 @@ elif [[ "$1" == "all" ]]; then
   formulae=(
     nyrra-foundry-cli
     nyrra-signals
+    scryu
   )
 else
   formulae=("$@")
@@ -36,6 +37,13 @@ for formula in "${formulae[@]}"; do
         "${repo_root}/scripts/update-nyrra-signals.sh" --optional
       else
         "${repo_root}/scripts/update-nyrra-signals.sh"
+      fi
+      ;;
+    scryu)
+      if [[ "$1" == "auto" ]]; then
+        "${repo_root}/scripts/update-scryu.sh" --optional
+      else
+        "${repo_root}/scripts/update-scryu.sh"
       fi
       ;;
     *)

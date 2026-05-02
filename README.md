@@ -10,6 +10,7 @@ This repo is the tap source of truth. Formulae are updated by repo-owned scripts
 |---|---|---|
 | `nyrra-foundry-cli` | `nyrra-labs/nyrra-foundry-cli` GitHub Releases | Private darwin release assets fetched through the GitHub Releases API. The formula reads `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, or `NYRRA_GH_TOKEN`, and falls back to `gh auth token` when available. The current release archive also omits `templates/README.md`, so the formula patches that sentinel file during install to keep `templates` commands working. |
 | `nyrra-signals` | `nyrra-labs/nyrra-signals` GitHub Releases | Private darwin arm64 release asset fetched through the GitHub Releases API. The formula reads `HOMEBREW_GITHUB_API_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN`, or `NYRRA_GH_TOKEN`, and falls back to `gh auth token` when available. |
+| `scryu` | `install.scryu.com` public release assets | Public darwin arm64 release asset from SCRYU's R2-backed installer metadata. Generated after the first SCRYU release publishes `latest.json`. |
 
 ## Automation
 
@@ -24,6 +25,7 @@ Once the GitHub repo exists as `nyrra-labs/homebrew-tap`:
 brew tap nyrra-labs/tap
 brew install nyrra-labs/tap/nyrra-foundry-cli
 brew install nyrra-labs/tap/nyrra-signals
+brew install nyrra-labs/tap/scryu
 ```
 
 If `gh` is not installed or not logged in locally, run installs with an explicit token:
@@ -38,7 +40,7 @@ HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install nyrra-labs/tap/nyrra-s
 - `nyrra-foundry-cli` is still a private release repo, so this tap is currently NYRRA-internal.
 - Automation can read those releases with the org-level `NYRRA_GH_TOKEN`.
 - `nyrra-foundry-cli` and `nyrra-signals` both use authenticated GitHub Releases API downloads for private assets, but the broader private-package story is still internal-only.
-- `nyrra-signals` is currently macOS arm64 only.
+- `nyrra-signals` and `scryu` are currently macOS arm64 only.
 
 ## Local Usage
 
