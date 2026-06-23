@@ -17,7 +17,7 @@ Result:
 - branch and PR creation use the repo `GITHUB_TOKEN`
 - private NYRRA formula refreshes work only if the repo can read `NYRRA_GH_TOKEN`
 - there is no separate publish workflow because the tap repo itself is the distribution surface
-- upstream `nyrra-signals` and `nyrra-foundry-cli` release workflows can also trigger this workflow automatically with `gh workflow run version-bumps.yml`, but that depends on `NYRRA_WORKFLOW_DISPATCH_TOKEN` being configured as a Depot CI secret in those producer repos
+- upstream `nyrra-signals` and `nyrra-foundry-cli` release workflows can also trigger this workflow automatically with `gh workflow run version-bumps.yml`, but that depends on `NYRRA_WORKFLOW_DISPATCH_TOKEN` being configured in those producer repos
 
 ## GitHub UI Links
 
@@ -97,6 +97,7 @@ Both private formulae now use install-side GitHub auth:
 
 Package-manager installs still intentionally avoid mutating your shell config:
 
+- `foundry-cli` installs the renamed CLI binary and prints completion setup snippets only
 - `nyrra-foundry-cli` does not create a standalone `npc` binary; use the printed caveats to add the `npc` shell alias and completion snippet yourself
 - `nyrra-signals` does not auto-open its first-run TUI; run `nyrra-signals setup` from a real terminal after install
 

@@ -1,4 +1,4 @@
-class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
+class FoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
   def initialize(url, name, version, **meta)
     @resolved_basename = meta.delete(:resolved_basename)
     @github_token = resolve_github_token
@@ -7,7 +7,7 @@ class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
       raise CurlDownloadStrategyError.new(
         url,
         [
-          "GitHub authentication is required to download the private nyrra-foundry-cli release asset.",
+          "GitHub authentication is required to download the private foundry-cli release asset.",
           "Set HOMEBREW_GITHUB_API_TOKEN, GH_TOKEN, GITHUB_TOKEN, or NYRRA_GH_TOKEN,",
           "or log in with gh auth login."
         ].join(" ")
@@ -59,25 +59,25 @@ class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
   end
 end
 
-class NyrraFoundryCli < Formula
+class FoundryCli < Formula
   desc "Foundry DevOps automation CLI"
   homepage "https://github.com/nyrra-labs/nyrra-foundry-cli"
-  version "0.0.20"
+  version "0.0.21-next.6"
   license "Apache-2.0"
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/450891075",
-          using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
-          resolved_basename: "nyrra-foundry-cli_0.0.20_darwin_arm64.tar.gz"
-      sha256 "9f5187a8b3f6cf3893d8929ae472942e897ab2267332e60d7334419c002a0674"
+      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/455953667",
+          using: FoundryCliGitHubReleaseDownloadStrategy,
+          resolved_basename: "foundry-cli_0.0.21-next.6_darwin_arm64.tar.gz"
+      sha256 "c696fe5c5f14c8d7ef23148b349715d8641bd5bee03051b0bca84d8d4fe32f1d"
     end
 
     on_intel do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/450891076",
-          using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
-          resolved_basename: "nyrra-foundry-cli_0.0.20_darwin_amd64.tar.gz"
-      sha256 "1d1025f3bc08f1628a8315f5e8fd85dee5e27d4c9342090ab5da16491e6f47a5"
+      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/455953669",
+          using: FoundryCliGitHubReleaseDownloadStrategy,
+          resolved_basename: "foundry-cli_0.0.21-next.6_darwin_amd64.tar.gz"
+      sha256 "d2275cdae2d0bf94c64ce023e2bf2e530cab22e9bd916b353a67e355be29f808"
     end
   end
 
@@ -90,22 +90,22 @@ class NyrraFoundryCli < Formula
     template_readme = templates_root/"README.md"
     template_readme.write("# templates\n") unless template_readme.exist?
 
-    bin.install_symlink libexec/"nyrra-foundry-cli"
+    bin.install_symlink libexec/"foundry-cli"
   end
 
   def caveats
     <<~EOS
       Package-manager installs do not edit your shell config.
 
-      To add the upstream npc shorthand in zsh:
-        printf '\\nalias npc=nyrra-foundry-cli\\nsource <(nyrra-foundry-cli completion --code zsh)\\n' >> ~/.zshrc
+      To add shell completion in zsh:
+        printf '\nsource <(foundry-cli completion --code zsh)\n' >> ~/.zshrc
 
       To add it in bash:
-        printf '\\nalias npc=nyrra-foundry-cli\\nsource <(nyrra-foundry-cli completion --code bash)\\n' >> ~/.bashrc
+        printf '\nsource <(foundry-cli completion --code bash)\n' >> ~/.bashrc
     EOS
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/nyrra-foundry-cli version")
+    assert_match version.to_s, shell_output("#{bin}/foundry-cli version")
   end
 end

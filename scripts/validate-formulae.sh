@@ -22,6 +22,16 @@ if [[ -f "${foundry_formula}" ]]; then
   grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/' "${foundry_formula}"
 fi
 
+new_foundry_formula="${repo_root}/Formula/foundry-cli.rb"
+if [[ -f "${new_foundry_formula}" ]]; then
+  grep -q 'class FoundryCli < Formula' "${new_foundry_formula}"
+  grep -q 'using: FoundryCliGitHubReleaseDownloadStrategy' "${new_foundry_formula}"
+  grep -q 'resolved_basename: "foundry-cli_' "${new_foundry_formula}"
+  grep -q 'bin.install_symlink libexec/"foundry-cli"' "${new_foundry_formula}"
+  grep -q 'shell_output("#{bin}/foundry-cli version")' "${new_foundry_formula}"
+  grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/' "${new_foundry_formula}"
+fi
+
 scryu_formula="${repo_root}/Formula/scryu.rb"
 if [[ -f "${scryu_formula}" ]]; then
   grep -q 'class Scryu < Formula' "${scryu_formula}"

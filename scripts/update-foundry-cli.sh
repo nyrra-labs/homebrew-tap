@@ -15,10 +15,10 @@ if (($# == 1)); then
 fi
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-formula_path="${repo_root}/Formula/nyrra-foundry-cli.rb"
+formula_path="${repo_root}/Formula/foundry-cli.rb"
 repo="nyrra-labs/nyrra-foundry-cli"
-asset_prefix="nyrra-foundry-cli"
-release_tag="${NYRRA_FOUNDRY_CLI_RELEASE_TAG:-}"
+asset_prefix="foundry-cli"
+release_tag="${FOUNDRY_CLI_RELEASE_TAG:-}"
 
 verify_sha256() {
   local expected="$1"
@@ -46,7 +46,7 @@ verify_release_archive() {
 
   listing="$(tar -tzf "${archive}")"
 
-  grep -Fxq "nyrra-foundry-cli" <<<"${listing}"
+  grep -Fxq "foundry-cli" <<<"${listing}"
   grep -Fxq "LICENSE" <<<"${listing}"
   grep -Fxq "README.md" <<<"${listing}"
 
@@ -66,14 +66,17 @@ fetch_release_by_tag() {
   fi
 }
 
-fetch_latest_stable_release_with_assets() {
+fetch_release_with_assets() {
+  local include_prereleases="$1"
+
   if [[ -n "${NYRRA_GH_TOKEN:-}" ]]; then
     GH_TOKEN="${NYRRA_GH_TOKEN}" gh api --paginate "repos/${repo}/releases"
   else
     gh api --paginate "repos/${repo}/releases"
-  fi | jq -s -c --arg asset_prefix "${asset_prefix}" '
+  fi | jq -s -c --arg asset_prefix "${asset_prefix}" --argjson include_prereleases "${include_prereleases}" '
     add
-    | map(select((.draft | not) and (.prerelease | not)))
+    | map(select(.draft | not))
+    | map(select($include_prereleases or (.prerelease | not)))
     | map(select(
         any(.assets[]?; (.name | test("^" + $asset_prefix + "_.*_darwin_amd64\\.tar\\.gz$"))) and
         any(.assets[]?; (.name | test("^" + $asset_prefix + "_.*_darwin_arm64\\.tar\\.gz$")))
@@ -85,22 +88,25 @@ fetch_latest_stable_release_with_assets() {
 if [[ -n "${release_tag}" ]]; then
   release_json="$(fetch_release_by_tag "${release_tag}")"
 elif [[ -n "${NYRRA_GH_TOKEN:-}" || -z "${GITHUB_ACTIONS:-}" ]]; then
-  release_json="$(fetch_latest_stable_release_with_assets)"
+  release_json="$(fetch_release_with_assets false)"
+  if [[ -z "${release_json}" || "${release_json}" == "null" ]]; then
+    release_json="$(fetch_release_with_assets true)"
+  fi
 elif [[ -n "${GITHUB_ACTIONS:-}" ]]; then
   if [[ "${optional}" == "true" ]]; then
-    echo "Skipping nyrra-foundry-cli: NYRRA_GH_TOKEN is not configured in GitHub Actions." >&2
+    echo "Skipping foundry-cli: NYRRA_GH_TOKEN is not configured in GitHub Actions." >&2
     exit 0
   fi
-  echo "NYRRA_GH_TOKEN is required in GitHub Actions to read the private nyrra-foundry-cli release." >&2
+  echo "NYRRA_GH_TOKEN is required in GitHub Actions to read the private foundry-cli release." >&2
   exit 1
 fi
 
 if [[ -z "${release_json}" || "${release_json}" == "null" ]]; then
   if [[ "${optional}" == "true" ]]; then
-    echo "Skipping nyrra-foundry-cli: no stable release contains legacy darwin archives." >&2
+    echo "Skipping foundry-cli: no release contains foundry-cli darwin archives." >&2
     exit 0
   fi
-  echo "nyrra-foundry-cli has no stable release with legacy darwin archives" >&2
+  echo "foundry-cli has no release with darwin archives" >&2
   exit 1
 fi
 
@@ -125,19 +131,19 @@ arm64_sha="$(jq -r '.digest // empty' <<<"${arm64_json}")"
 
 if [[ -z "${amd64_asset}" || "${amd64_asset}" == "null" || -z "${amd64_api_url}" || "${amd64_api_url}" == "null" || -z "${arm64_asset}" || "${arm64_asset}" == "null" || -z "${arm64_api_url}" || "${arm64_api_url}" == "null" ]]; then
   if [[ "${optional}" == "true" ]]; then
-    echo "Skipping nyrra-foundry-cli: latest release is missing required darwin archives." >&2
+    echo "Skipping foundry-cli: selected release is missing required darwin archives." >&2
     exit 0
   fi
-  echo "nyrra-foundry-cli latest release is missing required darwin archives" >&2
+  echo "foundry-cli selected release is missing required darwin archives" >&2
   exit 1
 fi
 
 if [[ -z "${amd64_sha}" || "${amd64_sha}" == "null" || -z "${arm64_sha}" || "${arm64_sha}" == "null" ]]; then
   if [[ "${optional}" == "true" ]]; then
-    echo "Skipping nyrra-foundry-cli: latest release is missing darwin asset digests." >&2
+    echo "Skipping foundry-cli: selected release is missing darwin asset digests." >&2
     exit 0
   fi
-  echo "nyrra-foundry-cli latest release is missing darwin asset digests" >&2
+  echo "foundry-cli selected release is missing darwin asset digests" >&2
   exit 1
 fi
 
@@ -164,7 +170,7 @@ fi
 )
 
 cat > "${formula_path}" <<EOF
-class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
+class FoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
   def initialize(url, name, version, **meta)
     @resolved_basename = meta.delete(:resolved_basename)
     @github_token = resolve_github_token
@@ -173,7 +179,7 @@ class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
       raise CurlDownloadStrategyError.new(
         url,
         [
-          "GitHub authentication is required to download the private nyrra-foundry-cli release asset.",
+          "GitHub authentication is required to download the private foundry-cli release asset.",
           "Set HOMEBREW_GITHUB_API_TOKEN, GH_TOKEN, GITHUB_TOKEN, or NYRRA_GH_TOKEN,",
           "or log in with gh auth login."
         ].join(" ")
@@ -225,7 +231,7 @@ class NyrraFoundryCliGitHubReleaseDownloadStrategy < CurlDownloadStrategy
   end
 end
 
-class NyrraFoundryCli < Formula
+class FoundryCli < Formula
   desc "Foundry DevOps automation CLI"
   homepage "https://github.com/nyrra-labs/nyrra-foundry-cli"
   version "${version}"
@@ -234,14 +240,14 @@ class NyrraFoundryCli < Formula
   on_macos do
     on_arm do
       url "${arm64_api_url}",
-          using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
+          using: FoundryCliGitHubReleaseDownloadStrategy,
           resolved_basename: "${arm64_asset}"
       sha256 "${arm64_sha}"
     end
 
     on_intel do
       url "${amd64_api_url}",
-          using: NyrraFoundryCliGitHubReleaseDownloadStrategy,
+          using: FoundryCliGitHubReleaseDownloadStrategy,
           resolved_basename: "${amd64_asset}"
       sha256 "${amd64_sha}"
     end
@@ -256,23 +262,23 @@ class NyrraFoundryCli < Formula
     template_readme = templates_root/"README.md"
     template_readme.write("# templates\n") unless template_readme.exist?
 
-    bin.install_symlink libexec/"nyrra-foundry-cli"
+    bin.install_symlink libexec/"foundry-cli"
   end
 
   def caveats
     <<~EOS
       Package-manager installs do not edit your shell config.
 
-      To add the upstream npc shorthand in zsh:
-        printf '\\\\nalias npc=nyrra-foundry-cli\\\\nsource <(nyrra-foundry-cli completion --code zsh)\\\\n' >> ~/.zshrc
+      To add shell completion in zsh:
+        printf '\\nsource <(foundry-cli completion --code zsh)\\n' >> ~/.zshrc
 
       To add it in bash:
-        printf '\\\\nalias npc=nyrra-foundry-cli\\\\nsource <(nyrra-foundry-cli completion --code bash)\\\\n' >> ~/.bashrc
+        printf '\\nsource <(foundry-cli completion --code bash)\\n' >> ~/.bashrc
     EOS
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/nyrra-foundry-cli version")
+    assert_match version.to_s, shell_output("#{bin}/foundry-cli version")
   end
 end
 EOF
