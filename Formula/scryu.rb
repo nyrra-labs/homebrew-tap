@@ -1,9 +1,9 @@
 class Scryu < Formula
   desc "SCRYU terminal client"
   homepage "https://scryu.com"
-  url "https://install.scryu.com/releases/v0.0.3/scryu_v0.0.3_darwin_arm64.tar.gz"
-  version "0.0.3"
-  sha256 "395cba5c7c660a87064a0e30cd160912e41325732d2634f19e4f5748a93ef472"
+  url "https://install.scryu.com/releases/v0.0.14/scryu_v0.0.14_darwin_arm64.tar.gz"
+  version "0.0.14"
+  sha256 "5bc967809391f13354e6610e1bf64fd7063bb3e6f94fbd75b70fd5e2760b237e"
   license :cannot_represent
   depends_on arch: :arm64
 
