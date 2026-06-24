@@ -64,6 +64,7 @@ class FoundryCli < Formula
   homepage "https://github.com/nyrra-labs/nyrra-foundry-cli"
   version "0.0.21"
   license "Apache-2.0"
+  revision 1
 
   on_macos do
     on_arm do
@@ -89,8 +90,53 @@ class FoundryCli < Formula
 
     template_readme = templates_root/"README.md"
     template_readme.write("# templates\n") unless template_readme.exist?
+    write_template_catalog(templates_root)
 
     bin.install_symlink libexec/"foundry-cli"
+  end
+
+  def write_template_catalog(templates_root)
+    (templates_root/"catalog.json").write <<~JSON
+      {
+        "templates": [
+          {
+            "id": "compute-modules/foundry-claw",
+            "category": "compute-modules",
+            "sourcePath": "compute-modules/foundry-claw",
+            "kind": "compute-module",
+            "language": "TypeScript",
+            "description": "PI-native multi-provider agent loop compute module starter for Foundry."
+          },
+          {
+            "id": "compute-modules/typescript",
+            "aliases": [
+              "compute-module-ts"
+            ],
+            "category": "compute-modules",
+            "sourcePath": "compute-modules/typescript",
+            "kind": "compute-module",
+            "language": "TypeScript",
+            "description": "Lean TypeScript compute module starter with typed definitions and Docker publish support."
+          },
+          {
+            "id": "ontology-as-code/foundry-claw",
+            "category": "ontology-as-code",
+            "sourcePath": "ontology-as-code/foundry-claw",
+            "kind": "ontology-package",
+            "language": "TypeScript",
+            "description": "Foundry CLAW skill-registry ontology starter with Marketplace packaging."
+          },
+          {
+            "id": "typescript-functions/tsv2",
+            "category": "typescript-functions",
+            "sourcePath": "typescript-functions/tsv2",
+            "kind": "functions-repo",
+            "language": "TypeScript",
+            "description": "TypeScript Functions repo starter with Foundry LLM proxy examples and TSV2 layout."
+          }
+        ]
+      }
+    JSON
   end
 
   def caveats
