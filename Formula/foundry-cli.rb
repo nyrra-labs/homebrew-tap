@@ -67,17 +67,17 @@ class FoundryCli < Formula
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/460442120",
+      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/460443534",
           using: FoundryCliGitHubReleaseDownloadStrategy,
           resolved_basename: "foundry-cli_0.0.25_darwin_arm64.tar.gz"
-      sha256 "5acca563362b84dbe932c4615163b36ec2f9eba73ffa405eff222c9e17612731"
+      sha256 "89db3c5c1979ff0917a40eee0ce90daa6b556781f99494e4daf3cc13efc5deed"
     end
 
     on_intel do
-      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/460442119",
+      url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/460443537",
           using: FoundryCliGitHubReleaseDownloadStrategy,
           resolved_basename: "foundry-cli_0.0.25_darwin_amd64.tar.gz"
-      sha256 "ce5f801ad23d167366a07e98788f69d2be1e9d67cce9c44cc97285eb67908701"
+      sha256 "bbeb78acc4a57c3c927bcda6b2c3c18c4102cedcdaad32b94048c42efed64fab"
     end
   end
 
