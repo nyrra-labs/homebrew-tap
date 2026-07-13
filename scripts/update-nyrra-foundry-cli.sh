@@ -16,7 +16,7 @@ fi
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 formula_path="${repo_root}/Formula/nyrra-foundry-cli.rb"
-repo="nyrra-labs/nyrra-foundry-cli"
+repo="shpitdev/foundry-cli"
 asset_prefix="nyrra-foundry-cli"
 release_tag="${NYRRA_FOUNDRY_CLI_RELEASE_TAG:-}"
 
@@ -67,11 +67,19 @@ fetch_release_by_tag() {
 }
 
 fetch_latest_stable_release_with_assets() {
+  local releases
+
   if [[ -n "${NYRRA_GH_TOKEN:-}" ]]; then
-    GH_TOKEN="${NYRRA_GH_TOKEN}" gh api --paginate "repos/${repo}/releases"
+    if ! releases="$(GH_TOKEN="${NYRRA_GH_TOKEN}" gh api --paginate "repos/${repo}/releases")"; then
+      return 1
+    fi
   else
-    gh api --paginate "repos/${repo}/releases"
-  fi | jq -s -c --arg asset_prefix "${asset_prefix}" '
+    if ! releases="$(gh api --paginate "repos/${repo}/releases")"; then
+      return 1
+    fi
+  fi
+
+  jq -s -c --arg asset_prefix "${asset_prefix}" '
     add
     | map(select((.draft | not) and (.prerelease | not)))
     | map(select(
@@ -79,13 +87,27 @@ fetch_latest_stable_release_with_assets() {
         any(.assets[]?; (.name | test("^" + $asset_prefix + "_.*_darwin_arm64\\.tar\\.gz$")))
       ))
     | first // empty
-  '
+  ' <<<"${releases}"
 }
 
 if [[ -n "${release_tag}" ]]; then
-  release_json="$(fetch_release_by_tag "${release_tag}")"
+  if ! release_json="$(fetch_release_by_tag "${release_tag}")"; then
+    if [[ "${optional}" == "true" ]]; then
+      echo "Skipping nyrra-foundry-cli: the transferred release repository is not accessible." >&2
+      exit 0
+    fi
+    echo "Unable to read the transferred nyrra-foundry-cli release repository." >&2
+    exit 1
+  fi
 elif [[ -n "${NYRRA_GH_TOKEN:-}" || -z "${GITHUB_ACTIONS:-}" ]]; then
-  release_json="$(fetch_latest_stable_release_with_assets)"
+  if ! release_json="$(fetch_latest_stable_release_with_assets)"; then
+    if [[ "${optional}" == "true" ]]; then
+      echo "Skipping nyrra-foundry-cli: the transferred release repository is not accessible." >&2
+      exit 0
+    fi
+    echo "Unable to read the transferred nyrra-foundry-cli release repository." >&2
+    exit 1
+  fi
 elif [[ -n "${GITHUB_ACTIONS:-}" ]]; then
   if [[ "${optional}" == "true" ]]; then
     echo "Skipping nyrra-foundry-cli: NYRRA_GH_TOKEN is not configured in GitHub Actions." >&2
@@ -227,7 +249,7 @@ end
 
 class NyrraFoundryCli < Formula
   desc "Foundry DevOps automation CLI"
-  homepage "https://github.com/nyrra-labs/nyrra-foundry-cli"
+  homepage "https://github.com/shpitdev/foundry-cli"
   version "${version}"
   license "Apache-2.0"
 

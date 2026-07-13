@@ -18,18 +18,24 @@ fi
 foundry_formula="${repo_root}/Formula/nyrra-foundry-cli.rb"
 if [[ -f "${foundry_formula}" ]]; then
   grep -q 'using: NyrraFoundryCliGitHubReleaseDownloadStrategy' "${foundry_formula}"
+  grep -q 'homepage "https://github.com/shpitdev/foundry-cli"' "${foundry_formula}"
   grep -q 'resolved_basename: "nyrra-foundry-cli_' "${foundry_formula}"
-  grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/' "${foundry_formula}"
+  grep -q 'url "https://api.github.com/repos/shpitdev/foundry-cli/releases/assets/' "${foundry_formula}"
 fi
 
-new_foundry_formula="${repo_root}/Formula/foundry-cli.rb"
-if [[ -f "${new_foundry_formula}" ]]; then
-  grep -q 'class FoundryCli < Formula' "${new_foundry_formula}"
-  grep -q 'using: FoundryCliGitHubReleaseDownloadStrategy' "${new_foundry_formula}"
-  grep -q 'resolved_basename: "foundry-cli_' "${new_foundry_formula}"
-  grep -q 'bin.install_symlink libexec/"foundry-cli"' "${new_foundry_formula}"
-  grep -q 'shell_output("#{bin}/foundry-cli version")' "${new_foundry_formula}"
-  grep -q 'url "https://api.github.com/repos/nyrra-labs/nyrra-foundry-cli/releases/assets/' "${new_foundry_formula}"
+foundry_updater="${repo_root}/scripts/update-nyrra-foundry-cli.sh"
+grep -q 'repo="shpitdev/foundry-cli"' "${foundry_updater}"
+grep -q 'homepage "https://github.com/shpitdev/foundry-cli"' "${foundry_updater}"
+
+old_foundry_repo="nyrra-labs/nyrra""-foundry-cli"
+if grep -R -n -F -- "${old_foundry_repo}" \
+  "${repo_root}/Formula" \
+  "${repo_root}/scripts" \
+  "${repo_root}/.github" \
+  "${repo_root}/README.md" \
+  "${repo_root}/docs"; then
+  echo "Active Foundry packaging references must use shpitdev/foundry-cli." >&2
+  exit 1
 fi
 
 scryu_formula="${repo_root}/Formula/scryu.rb"
