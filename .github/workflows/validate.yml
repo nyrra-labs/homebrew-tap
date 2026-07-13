@@ -27,3 +27,6 @@ jobs:
 
       - name: Validate formulae
         run: ./scripts/validate-formulae.sh
+
+      - name: Test stale-owner guard
+        run: ./scripts/test-validate-formulae.sh
